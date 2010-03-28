@@ -1,5 +1,6 @@
 package com.cadrlife.mpc1000;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -17,10 +18,31 @@ public class Program extends BaseMpcData {
     		pads[i] = new Pad();
     	}
 	}
+	
 	private MidiData midiData = new MidiData();
 	private SliderData slider1 = new SliderData();
 	private SliderData slider2 = new SliderData();
 
+	public static Program createDefault() {
+		Program program = new Program();
+		try {
+			program.read(new DataInputStream(program.getClass().getResourceAsStream("default.pgm")));
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
+		return program;
+	}
+	
+	public static Program createChromatic() {
+		Program program = new Program();
+		try {
+			program.read(new DataInputStream(program.getClass().getResourceAsStream("chromatic.pgm")));
+		} catch (IOException e) {
+			throw new AssertionError(e);
+		}
+		return program;
+	}
+	
 	public void readFromFile(String filename) throws IOException {
 		RandomAccessFile file = new RandomAccessFile(filename, "r");
 		this.read(file);
@@ -45,7 +67,7 @@ public class Program extends BaseMpcData {
     }
     
     public void readHeader(DataInput in) throws IOException {
-    	fileSizeInBytes  = in.readUnsignedShort();
+    	fileSizeInBytes = in.readUnsignedShort();
     	in.skipBytes(2); // Padding
     	byte[] filetypeBytes = new byte[16];
     	in.readFully(filetypeBytes); 

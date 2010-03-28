@@ -5,7 +5,9 @@ Java library for reading and writing MPC1000 PGM files.
 # Authors
 
 MPC-Lib was created by [Ray Myers](http://cadrlife.com), with special thanks to 
-[Stephen Norum](http://www.mybunnyhug.com/) for his documention of the MPC1000 PGM format.
+[Stephen Norum](http://www.mybunnyhug.com) for his documention of the MPC1000 PGM format
+and [Cyrille Martraire](http://cyrille.martraire.com), author of 
+[MpcMaid](http://mpcmaid.sourceforge.net/).
 
 This implementation is licensed under the GNU GPL version 3.0, with the exception of the included 
 libraries.
