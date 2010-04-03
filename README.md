@@ -13,5 +13,5 @@ This implementation is licensed under the GNU GPL version 3.0, with the exceptio
 libraries.
 
 Google Collections: Apache 2.0
-
 Apache Commons Lang: Apache 2.0
+Apache Commons IO: Apache 2.0
