@@ -1,12 +1,14 @@
 package com.cadrlife.mpc1000;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import com.cadrlife.mpc1000.util.DataOutputHelper;
+import org.apache.commons.io.input.SwappedDataInputStream;
+
+import com.cadrlife.mpc1000.util.SwappedDataOutputHelper;
 
 public class Program extends BaseMpcData {
 	public static final Charset CHARSET = Charset.forName("US-ASCII");
@@ -26,7 +28,8 @@ public class Program extends BaseMpcData {
 	public static Program createDefault() {
 		Program program = new Program();
 		try {
-			program.read(new DataInputStream(program.getClass().getResourceAsStream("default.pgm")));
+//			program.read(new SwappedDataInputStream(program.getClass().getResourceAsStream("default.pgm")));
+			program.readFromFile("src/com/cadrlife/mpc1000/default.pgm");
 		} catch (IOException e) {
 			throw new AssertionError(e);
 		}
@@ -34,9 +37,11 @@ public class Program extends BaseMpcData {
 	}
 	
 	public static Program createChromatic() {
+		
 		Program program = new Program();
 		try {
-			program.read(new DataInputStream(program.getClass().getResourceAsStream("chromatic.pgm")));
+//			program.read(new SwappedDataInputStream(program.getClass().getResourceAsStream("chromatic.pgm")));
+			program.readFromFile("src/com/cadrlife/mpc1000/chromatic.pgm");
 		} catch (IOException e) {
 			throw new AssertionError(e);
 		}
@@ -44,91 +49,103 @@ public class Program extends BaseMpcData {
 	}
 	
 	public void readFromFile(String filename) throws IOException {
-		RandomAccessFile file = new RandomAccessFile(filename, "r");
-		this.read(file);
-		file.close();
+		SwappedDataInputStream in = new SwappedDataInputStream(new FileInputStream(filename));
+		this.read(in);
+		in.close();
 	}
 	public void writeToFile(String filename) throws IOException {
-		RandomAccessFile file = new RandomAccessFile(filename, "rw");
+		FileOutputStream file = new FileOutputStream(filename);
 		this.write(file);
 		file.close();
 	}
 	
-	public void read(DataInput in) throws IOException {
-    	readHeader(in);
+	@Override
+	public void read(InputStream in) throws IOException {
+		SwappedDataInputStream swappedIn = convertInputStream(in);
+    	readHeader(swappedIn);
     	for (int i = 0; i<64; i++) {
-    		pads[i].read(in);
+    		getPads()[i].read(swappedIn);
     	}
-    	midiData = new MidiData();
-    	midiData.read(in);
-    	slider1.read(in);
-    	slider2.read(in);
-    	in.skipBytes(17);
+    	getMidiData().read(swappedIn);
+    	getSlider1().read(swappedIn);
+    	getSlider2().read(swappedIn);
+    	swappedIn.skipBytes(17);
     }
     
-    public void readHeader(DataInput in) throws IOException {
-    	fileSizeInBytes = in.readUnsignedShort();
+    private void readHeader(SwappedDataInputStream in) throws IOException {
+    	setFileSizeInBytes(in.readUnsignedShort());
     	in.skipBytes(2); // Padding
     	byte[] filetypeBytes = new byte[16];
     	in.readFully(filetypeBytes); 
-    	filetype = new String(filetypeBytes, CHARSET);
+    	setFiletype(new String(filetypeBytes, CHARSET).replace("\0",""));
     	in.skipBytes(4); // Padding
     }
     
-    public void write(DataOutput out) throws IOException {
+    @Override
+	public void write(OutputStream out) throws IOException {
     	writeHeader(out);
     	for (int i = 0; i<64; i++) {
-			pads[i].write(out);
+			getPads()[i].write(out);
     	}
-    	midiData.write(out);
-    	slider1 = new SliderData();
-    	slider1.write(out);
-    	slider2.write(out);
-    	out.write(new byte[17], 0, 17);
+    	getMidiData().write(out);
+    	getSlider1().write(out);
+    	getSlider2().write(out);
+    	SwappedDataOutputHelper.writeZeroes(out, 17);
 	}
     
-    private void writeHeader(DataOutput out) throws IOException {
-    	DataOutputHelper.writeUnsignedShort(out, fileSizeInBytes);
-    	DataOutputHelper.writeZeroes(out, 2); // Padding
-		DataOutputHelper.writeAsciiString(out, filetype, 16);
-		DataOutputHelper.writeZeroes(out, 4); // Padding
+    private void writeHeader(OutputStream out) throws IOException {
+    	SwappedDataOutputHelper.writeUnsignedShort(out, getFileSizeInBytes());
+    	SwappedDataOutputHelper.writeZeroes(out, 2); // Padding
+		SwappedDataOutputHelper.writeAsciiString(out, getFiletype(), 16);
+		SwappedDataOutputHelper.writeZeroes(out, 4); // Padding
 	}
 
-    public int getFileSizeInBytes() {
-		return fileSizeInBytes;
-	}
 	public void setFileSizeInBytes(int fileSizeInBytes) {
 		this.fileSizeInBytes = fileSizeInBytes;
 	}
-	public String getFiletype() {
-		return filetype;
+
+	public int getFileSizeInBytes() {
+		return fileSizeInBytes;
 	}
+
 	public void setFiletype(String filetype) {
 		this.filetype = filetype;
 	}
-	public Pad[] getPads() {
-		return pads;
+
+	public String getFiletype() {
+		return filetype;
 	}
+
 	public void setPads(Pad[] pads) {
 		this.pads = pads;
 	}
-	public MidiData getMidiData() {
-		return midiData;
+
+	public Pad[] getPads() {
+		return pads;
 	}
+
 	public void setMidiData(MidiData midiData) {
 		this.midiData = midiData;
 	}
-	public SliderData getSlider1() {
-		return slider1;
+
+	public MidiData getMidiData() {
+		return midiData;
 	}
+
 	public void setSlider1(SliderData slider1) {
 		this.slider1 = slider1;
 	}
-	public SliderData getSlider2() {
-		return slider2;
+
+	public SliderData getSlider1() {
+		return slider1;
 	}
+
 	public void setSlider2(SliderData slider2) {
 		this.slider2 = slider2;
+	}
+
+	public SliderData getSlider2() {
+		return slider2;
 	}
 	
 }

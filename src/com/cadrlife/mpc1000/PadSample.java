@@ -1,42 +1,53 @@
 package com.cadrlife.mpc1000;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import com.cadrlife.mpc1000.util.DataOutputHelper;
+import org.apache.commons.io.input.SwappedDataInputStream;
+
+import com.cadrlife.mpc1000.util.SwappedDataOutputHelper;
 
 public class PadSample extends BaseMpcData {
-	public String sampleName;
+	public static int MAX_RANGE = 127;
+	public static int MIN_RANGE = 0;
+	public static int MAX_LEVEL = 100;
+	public static int MIN_LEVEL = 0;
+	public static int MAX_TUNING = 3600;
+	public static int MIN_TUNING = -3600;
+	public static int ONE_SHOT_PLAYMODE = 0;
+	public static int NOTE_ON_PLAYMODE = 1;
+	private String sampleName = "";
 	private int level = 0;
 	private int rangeLower = 0;
 	private int rangeUpper = 0;
 	private short tuning = 0;
 	private int playMode = 0; // 0="One Shot", 1="Note On"
 
-	public void read(DataInput in) throws IOException {
+	public void read(InputStream in) throws IOException {
+		SwappedDataInputStream swappedIn = convertInputStream(in);
 		byte[] sampleNameBytes = new byte[16];
-		in.readFully(sampleNameBytes);
-		sampleName = new String(sampleNameBytes, Program.CHARSET);
-		in.skipBytes(1);
-		level  = in.readUnsignedByte();
-		rangeLower = in.readUnsignedByte();
-		rangeUpper = in.readUnsignedByte();
-		tuning = in.readShort();
-		playMode = in.readUnsignedByte();
-		in.skipBytes(1);
+		swappedIn.readFully(sampleNameBytes);
+		setSampleName(new String(sampleNameBytes, Program.CHARSET).replace("\0", ""));
+		swappedIn.skipBytes(1);
+		setLevel(swappedIn.readUnsignedByte());
+		setRangeLower(swappedIn.readUnsignedByte());
+		setRangeUpper(swappedIn.readUnsignedByte());
+		setTuning(swappedIn.readShort());
+		setPlayMode(swappedIn.readUnsignedByte());
+		swappedIn.skipBytes(1);
 	}
 
 	@Override
-	public void write(DataOutput out) throws IOException {
-		DataOutputHelper.writeAsciiString(out, sampleName, 16);
-		DataOutputHelper.writeZeroes(out,1);
-		out.write(level);
-		out.write(rangeLower);
-		out.write(rangeUpper);
-		out.writeShort(tuning);
-		out.write(playMode);
-		DataOutputHelper.writeZeroes(out,1);
+	public void write(OutputStream out) throws IOException {
+		SwappedDataOutputHelper.writeAsciiString(out, getSampleName(), 16);
+		SwappedDataOutputHelper.writeZeroes(out,1);
+		out.write(getLevel());
+		out.write(getRangeLower());
+		out.write(getRangeUpper());
+		SwappedDataOutputHelper.writeSignedShort(out, getTuning());
+		out.write(getPlayMode());
+		SwappedDataOutputHelper.writeZeroes(out,1);
 	}
 
 	public String getSampleName() {
@@ -44,6 +55,7 @@ public class PadSample extends BaseMpcData {
 	}
 
 	public void setSampleName(String sampleName) {
+		checkLength(sampleName, 16);
 		this.sampleName = sampleName;
 	}
 
@@ -52,6 +64,7 @@ public class PadSample extends BaseMpcData {
 	}
 
 	public void setLevel(int level) {
+		checkRange(level,MIN_LEVEL,MAX_LEVEL);
 		this.level = level;
 	}
 
@@ -60,6 +73,7 @@ public class PadSample extends BaseMpcData {
 	}
 
 	public void setRangeLower(int rangeLower) {
+		checkRange(rangeLower,MIN_RANGE,MAX_RANGE);
 		this.rangeLower = rangeLower;
 	}
 
@@ -68,6 +82,7 @@ public class PadSample extends BaseMpcData {
 	}
 
 	public void setRangeUpper(int rangeUpper) {
+		checkRange(rangeUpper,MIN_RANGE,MAX_RANGE);
 		this.rangeUpper = rangeUpper;
 	}
 
@@ -76,6 +91,7 @@ public class PadSample extends BaseMpcData {
 	}
 
 	public void setTuning(short tuning) {
+		checkRange(tuning,MIN_TUNING,MAX_TUNING);
 		this.tuning = tuning;
 	}
 
@@ -84,6 +100,9 @@ public class PadSample extends BaseMpcData {
 	}
 
 	public void setPlayMode(int playMode) {
+		checkRange(playMode,ONE_SHOT_PLAYMODE,NOTE_ON_PLAYMODE);
 		this.playMode = playMode;
 	}
+
+
 }

@@ -1,10 +1,13 @@
 package com.cadrlife.mpc1000;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import com.cadrlife.mpc1000.util.DataOutputHelper;
+import org.apache.commons.io.input.SwappedDataInputStream;
+import org.apache.commons.lang.BooleanUtils;
+
+import com.cadrlife.mpc1000.util.SwappedDataOutputHelper;
 
 public class Pad extends BaseMpcData {
 	private PadSample[] padSamples = new PadSample[4];
@@ -28,61 +31,63 @@ public class Pad extends BaseMpcData {
 	private int fxSendLevel;
 	private int filterAttenuation; // 0="0dB", 1="-6dB", 2="-12dB"
 	
-	public void read(DataInput in) throws IOException {
+	public void read(InputStream in) throws IOException {
+		SwappedDataInputStream swappedIn = convertInputStream(in);
 		for (int i=0; i<4; i++) {
-			padSamples[i].read(in);
+			padSamples[i].read(swappedIn);
 		}
-		in.skipBytes(2);
-		voiceOverlap = in.readBoolean();
-		muteGroup = in.readUnsignedByte();
-		in.skipBytes(1); // Padding
-		in.skipBytes(1); // Unknown. 0x01
-		attack = in.readUnsignedByte();
-		decay = in.readUnsignedByte();
-		decayMode = in.readUnsignedByte();
-		in.skipBytes(2);
-		velocityToLevel = in.readUnsignedByte();
-		in.skipBytes(5);
+		swappedIn.skipBytes(2);
+		// SwappedDataInputStream.readBoolean returns inverted results as of IO Commons 1.4.
+		voiceOverlap = BooleanUtils.toBoolean(swappedIn.readByte());
+		muteGroup = swappedIn.readUnsignedByte();
+		swappedIn.skipBytes(1); // Padding
+		swappedIn.skipBytes(1); // Unknown. 0x01
+		attack = swappedIn.readUnsignedByte();
+		decay = swappedIn.readUnsignedByte();
+		decayMode = swappedIn.readUnsignedByte();
+		swappedIn.skipBytes(2);
+		velocityToLevel = swappedIn.readUnsignedByte();
+		swappedIn.skipBytes(5);
 		filter1 = new PadFilter();
-		filter1.read(in);
+		filter1.read(swappedIn);
 		filter2 = new PadFilter();
-		filter2.read(in);
-		in.skipBytes(14);
-		mixerLevel = in.readUnsignedByte();
-		mixerPan = in.readUnsignedByte();
-		output = in.readUnsignedByte();
-		fxSend = in.readUnsignedByte();
-		fxSendLevel = in.readUnsignedByte();
-		filterAttenuation = in.readUnsignedByte();
-		in.skipBytes(15);
+		filter2.read(swappedIn);
+		swappedIn.skipBytes(14);
+		mixerLevel = swappedIn.readUnsignedByte();
+		mixerPan = swappedIn.readUnsignedByte();
+		output = swappedIn.readUnsignedByte();
+		fxSend = swappedIn.readUnsignedByte();
+		fxSendLevel = swappedIn.readUnsignedByte();
+		filterAttenuation = swappedIn.readUnsignedByte();
+		swappedIn.skipBytes(15);
 	}
 
 	@Override
-	public void write(DataOutput out) throws IOException {
+	public void write(OutputStream out) throws IOException {
 		for (int i=0; i<4; i++) {
 			padSamples[i].write(out);
 		}
-		DataOutputHelper.writeZeroes(out, 2);
-		out.writeBoolean(voiceOverlap);
+		SwappedDataOutputHelper.writeZeroes(out, 2);
+		out.write(BooleanUtils.toInteger(voiceOverlap));
 		out.write(muteGroup);
-		DataOutputHelper.writeZeroes(out, 1); // Padding
+		SwappedDataOutputHelper.writeZeroes(out, 1); // Padding
 		out.write(1); // Unknown. 0x01
 		out.write(attack);
 		out.write(decay);
 		out.write(decayMode);
-		DataOutputHelper.writeZeroes(out, 2); // Padding
+		SwappedDataOutputHelper.writeZeroes(out, 2); // Padding
 		out.write(velocityToLevel);
-		DataOutputHelper.writeZeroes(out, 5); // Padding
+		SwappedDataOutputHelper.writeZeroes(out, 5); // Padding
 		filter1.write(out);
 		filter2.write(out);
-		DataOutputHelper.writeZeroes(out, 14); // Padding
+		SwappedDataOutputHelper.writeZeroes(out, 14); // Padding
 		out.write(mixerLevel);
 		out.write(mixerPan);
 		out.write(output);
 		out.write(fxSend);
 		out.write(fxSendLevel);
 		out.write(filterAttenuation);
-		DataOutputHelper.writeZeroes(out, 15); // Padding
+		SwappedDataOutputHelper.writeZeroes(out, 15); // Padding
 	}
 
 	public PadSample[] getPadSamples() {
