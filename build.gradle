@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+group = 'com.cadrlife'
+version = '0.1.0'
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'commons-lang', name: 'commons-lang', version: '2.5'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile group: 'com.google.guava', name: 'guava', version: '14.0'
+    testCompile 'junit:junit:4.11'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.5'
+}

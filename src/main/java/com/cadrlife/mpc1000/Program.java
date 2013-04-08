@@ -9,11 +9,12 @@ import java.nio.charset.Charset;
 import org.apache.commons.io.input.SwappedDataInputStream;
 
 import com.cadrlife.mpc1000.util.SwappedDataOutputHelper;
+import com.google.common.base.Throwables;
 
 public class Program extends BaseMpcData {
 	public static final Charset CHARSET = Charset.forName("US-ASCII");
 	private int fileSizeInBytes = 1066;
-	private String filetype = "MPC1000 PGM 1.00"; // File Type "MPC1000 PGM 1.00"
+	private String filetype = "MPC1000 PGM 1.00";
 	private Pad[] pads = new Pad[64];
 	{
 		for (int i = 0; i<64; i++) {
@@ -28,10 +29,9 @@ public class Program extends BaseMpcData {
 	public static Program createDefault() {
 		Program program = new Program();
 		try {
-//			program.read(new SwappedDataInputStream(program.getClass().getResourceAsStream("default.pgm")));
-			program.readFromFile("src/com/cadrlife/mpc1000/default.pgm");
+			program.read(new SwappedDataInputStream(program.getClass().getResourceAsStream("default.pgm")));
 		} catch (IOException e) {
-			throw new AssertionError(e);
+			Throwables.propagate(e);
 		}
 		return program;
 	}
@@ -40,10 +40,9 @@ public class Program extends BaseMpcData {
 		
 		Program program = new Program();
 		try {
-//			program.read(new SwappedDataInputStream(program.getClass().getResourceAsStream("chromatic.pgm")));
-			program.readFromFile("src/com/cadrlife/mpc1000/chromatic.pgm");
+			program.read(new SwappedDataInputStream(program.getClass().getResourceAsStream("chromatic.pgm")));
 		} catch (IOException e) {
-			throw new AssertionError(e);
+			Throwables.propagate(e);
 		}
 		return program;
 	}

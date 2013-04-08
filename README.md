@@ -9,9 +9,8 @@ MPC-Lib was created by [Ray Myers](http://cadrlife.com), with special thanks to
 and [Cyrille Martraire](http://cyrille.martraire.com), author of 
 [MpcMaid](http://mpcmaid.sourceforge.net/).
 
-This implementation is licensed under the GNU GPL version 3.0, with the exception of the included 
-libraries.
+This implementation is licensed under Apache 2.0, and uses the following libraries.
 
-Google Collections: Apache 2.0
+Google Guava: Apache 2.0
 Apache Commons Lang: Apache 2.0
 Apache Commons IO: Apache 2.0

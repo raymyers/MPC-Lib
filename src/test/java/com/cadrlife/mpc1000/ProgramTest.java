@@ -2,6 +2,7 @@ package com.cadrlife.mpc1000;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -12,8 +13,8 @@ public class ProgramTest {
 	public void readWrite() throws IOException {
 		Program program = new Program();
 // Reading from the classpath gets bad data for whatever reason.
-//		program.read(new DataInputStream(getClass().getResourceAsStream("test.pgm")));
-		program.readFromFile("test/com/cadrlife/mpc1000/test.pgm");
+		program.read(new DataInputStream(getClass().getResourceAsStream("test.pgm")));
+//		program.readFromFile("src/test/resources/com/cadrlife/mpc1000/test.pgm");
 		File temp = File.createTempFile("test",".pgm");
 		temp.deleteOnExit();
 		System.out.println(temp.getAbsolutePath());
