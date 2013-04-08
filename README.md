@@ -11,6 +11,6 @@ and [Cyrille Martraire](http://cyrille.martraire.com), author of
 
 This implementation is licensed under Apache 2.0, and uses the following libraries.
 
-Google Guava: Apache 2.0
-Apache Commons Lang: Apache 2.0
-Apache Commons IO: Apache 2.0
+  * Google Guava: Apache 2.0
+  * Apache Commons Lang: Apache 2.0
+  * Apache Commons IO: Apache 2.0
